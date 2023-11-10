@@ -64,13 +64,16 @@ for file in *."$last_extension"; do
 	# Remove channel name from title and leading spaces/hyphens
 	title_no_channel=$(echo "$title" | sed -E "s/\b$channel\b//i" | sed -E 's/^[[:space:]]*-?[[:space:]]*//')
 
-    ffmpeg -i "$file" -c copy -map_metadata 0 -metadata title="$title_no_channel" -metadata track="$index" -metadata artist="$channel" -metadata year="$release_year" -metadata album="$album" "temp_$file"
+    # Remove anything following "(Official" or "(official" and spaces around it
+	title_no_official=$(echo "$title_no_channel" | sed -E 's/[[:space:]]*\(Official[[:space:]]*//i' | sed -E 's/[[:space:]]*\(official[[:space:]]*//i')
+
+    ffmpeg -i "$file" -c copy -map_metadata 0 -metadata title="$title_no_official" -metadata track="$index" -metadata artist="$channel" -metadata year="$release_year" -metadata album="$album" "temp_$file"
 
     # Remove original file
     rm "$file"
 
     # Rename temp file to the original track name
-    mv "temp_$file" "$index $title_no_channel.${file##*.}"
+    mv "temp_$file" "$index $title_no_official.${file##*.}"
 done
 
 # Remove JSON files
